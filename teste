@@ -1,0 +1,118 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import streamlit as st
+
+# Título e descrição do problema
+st.title("Solução de EDO usando Elementos Finitos")
+st.write("""
+Este aplicativo resolve a equação diferencial dy/dx + y = 0 usando o método dos elementos finitos com elementos lineares.
+""")
+
+# 1. Parâmetros do problema
+st.subheader("1. Parâmetros do Problema")
+
+# Matriz de coordenadas (nós e suas posições)
+# nó | coord. x | coord. y (apenas 2D, y=0)
+coord = np.array([[1, 0],      # Nó 1 (x = 0)
+                  [2, 0.5],    # Nó 2 (x = 0.5)
+                  [3, 1]])     # Nó 3 (x = 1)
+
+# Matriz de conectividades (elementos e nós que os formam)
+# elemento | nó 1 | nó 2
+conec = np.array([[1, 1, 2],   # Elemento 1 conecta nó 1 e nó 2
+                  [2, 2, 3]])  # Elemento 2 conecta nó 2 e nó 3
+
+# Número de nós do problema
+nn = coord.shape[0]
+# Número de elementos do problema
+nel = conec.shape[0]
+
+# Inicializa a matriz de rigidez global (K) com zeros
+K = np.zeros((nn, nn))
+
+# 2. Montagem da matriz de rigidez global
+st.subheader("2. Montagem da Matriz de Rigidez Global")
+for i in range(nel):
+    # Nó de início e fim do elemento
+    no1 = conec[i, 1] - 1
+    no2 = conec[i, 2] - 1
+
+    # Comprimento do elemento (distância entre os nós conectados)
+    L = coord[no2, 1] - coord[no1, 1]
+
+    # Matriz de rigidez do elemento
+    ke = np.array([[(L / 3) + (1 / L) - 1, (L / 6) - (1 / L)], 
+                   [(L / 6) - (1 / L), (L / 3) + (1 / L) + 1]])
+
+    # Índices globais dos nós conectados
+    gl = [no1, no2]
+
+    # Acumula a matriz de rigidez do elemento na matriz global
+    K[np.ix_(gl, gl)] += ke
+
+# Exibe a matriz de rigidez global
+st.write("Matriz de rigidez global K:")
+st.write(K)
+
+# 3. Aplicação das condições de contorno e solução do sistema de equações
+st.subheader("3. Aplicação das Condições de Contorno")
+
+# 3.1. Condição de contorno: Y(0) = 1 (no nó 1)
+Y1 = 1  # Valor prescrito no nó 1
+
+# Calcula o vetor de forças F com base na condição Y1
+F = -K[:, 0] * Y1
+F = np.delete(F, 0)  # Remove a linha do nó 1, já que Y1 é prescrito
+
+# Remove a linha e a coluna do nó 1 na matriz K (imposição de contorno)
+K_reduzido = np.delete(np.delete(K, 0, axis=0), 0, axis=1)
+
+# Soluciona o sistema linear reduzido
+sol = np.linalg.solve(K_reduzido, F)
+
+# Adiciona a solução no nó 1 (Y1) para completar a solução
+sol_comp = np.concatenate(([Y1], sol))
+
+# 4. Pós-processamento
+st.subheader("4. Pós-processamento")
+
+# 4.1. Exibe os resultados numéricos obtidos
+st.write("Resultados Numéricos nos Nós:")
+resultados_numericos = {f"y({coord[i, 1]:0.2f})": sol_comp[i] for i in range(nn)}
+st.write(resultados_numericos)
+
+# 4.2. Solução analítica exata (curva contínua)
+x_fino = np.linspace(0, 1, 100)  # 100 pontos para a solução analítica
+y_analitica_fina = np.exp(-x_fino)  # Solução analítica y(x) = e^(-x)
+
+# 4.3. Solução analítica nos nós para comparação com a solução numérica
+y_analitica = np.exp(-coord[:, 1])  # Solução analítica nos nós
+
+# Exibe a solução analítica nos nós
+st.write("Solução Analítica nos Nós:")
+sol_analitica = {f"y_analitico({coord[i, 1]:0.2f})": y_analitica[i] for i in range(nn)}
+st.write(sol_analitica)
+
+# Calcula o erro absoluto entre a solução numérica e a analítica nos nós
+erro = np.abs(y_analitica - sol_comp)
+st.write("Erro absoluto entre a solução numérica e analítica:")
+erros_nos = {f"Erro em y({coord[i, 1]:0.2f})": erro[i] for i in range(nn)}
+st.write(erros_nos)
+
+# 4.4. Plotagem das soluções (numérica e analítica)
+st.subheader("Gráfico: Comparação entre Solução Numérica e Solução Analítica")
+
+fig, ax = plt.subplots()
+# Solução numérica nos nós
+ax.plot(coord[:, 1], sol_comp, '-o', label='Solução Numérica', linewidth=2, markersize=6)
+# Solução analítica contínua
+ax.plot(x_fino, y_analitica_fina, '--', label='Solução Analítica Contínua', linewidth=2)
+# Configuração do gráfico
+ax.legend(loc='best')
+ax.set_title('Comparação entre Solução Numérica e Solução Analítica (Exponencial)')
+ax.set_xlabel('x')
+ax.set_ylabel('y(x)')
+ax.grid(True)
+
+# Exibe o gráfico no Streamlit
+st.pyplot(fig)
