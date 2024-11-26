@@ -58,14 +58,13 @@ n = np.array([st.sidebar.number_input(f"Nº barras camada {i+1}", min_value=1, v
 fck = st.sidebar.number_input("Fck do concreto (kN/cm²)", value=2.0)
 fyk = st.sidebar.number_input("Fyk do aço (kN/cm²)", value=50.0)
 Nk = st.sidebar.number_input("Esforço normal de serviço (kN)", value=410.0)
-distMomento = st.sidebar.number_input("Distância para momento fletor (cm)", value=25.0)
+Mk = st.sidebar.number_input("Momento fletor de serviço (kN.cm)", value=25.0)
 
 # Propriedades calculadas
 Es = 21000  # Módulo de elasticidade do aço
 fcd = fck / 1.4
 Sigmacd = 0.85 * fcd
 fyd = fyk / 1.15
-Mk = Nk * distMomento
 Nd = 1.4 * Nk
 Md = 1.4 * Mk
 
