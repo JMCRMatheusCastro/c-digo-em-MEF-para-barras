@@ -98,7 +98,6 @@ Ast = abs(omega * b * h * Sigmacd / fyd)
 # Exibir resultados
 st.subheader("Resultados")
 st.write(f"Profundidade da linha neutra (cm): {x_opt:.2f}")
-st.write(f"Valor da função objetivo: {resultado.fun:.4f}")
 st.write(f"Área de aço total (Ast) requerida (cm²): {Ast:.4f}")
 
 # Exibir gráfico
