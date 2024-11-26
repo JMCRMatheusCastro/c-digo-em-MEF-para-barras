@@ -2,8 +2,6 @@
 # José Matheus de Castro Rodrigues
 # Data: 29/11/2024
 
-pip install streamlit
-
 import numpy as np
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
