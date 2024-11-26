@@ -46,7 +46,7 @@ def restricaoNaoLinear(x, h, epsilon_0, k, Beta, n, Es, fyd, b, Sigmacd, Nd, Md)
     return calcularFxi(x, h, epsilon_0, k, Beta, n, Es, fyd, b, Sigmacd, Nd, Md)
 
 # Configuração do Streamlit
-st.title("Dimensionamento da Área de Aço - Flexo-Compressão")
+st.title("Dimensionamento da Área de Aço - Flexo-Compressão Normal")
 st.sidebar.header("Parâmetros de Entrada")
 
 # Entrada de parâmetros
